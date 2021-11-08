@@ -60,6 +60,9 @@ class Polynomial:
   def __str__(self) -> str:
     return str(self._terms)
 
+  def degree(self) -> int:
+    return max(self._terms, key=lambda monomial: monomial.degree)
+
 
 if __name__ == '__main__':
   print('1 ->', Polynomial('1'))
@@ -74,3 +77,4 @@ if __name__ == '__main__':
   print('3x^2 ->', Polynomial('3x^2'))
   print('2.5x^2 ->', Polynomial('2.5x^2'))
   print('4.5x^2y^3-2x^3 ->', Polynomial('4.5x^2y^3-2x^3'))
+  print('4.5x^2y^3-2x^3+y^6 ->', Polynomial('4.5x^2y^3-2x^3+y^6'))
