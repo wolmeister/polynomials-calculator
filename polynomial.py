@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 import re
 
@@ -21,7 +22,7 @@ def parse_polynomial_expression(expression: str) -> list[Monomial]:
   monomials: list[Monomial] = []
 
   for term in expression_terms:
-    coefficient = 1;
+    coefficient = float(1);
     degree = 0;
     indeterminates: dict[str, int] = {}
 
@@ -31,7 +32,7 @@ def parse_polynomial_expression(expression: str) -> list[Monomial]:
 
     if len(coefficient_string):
       if coefficient_string == '-':
-        coefficient = -1;
+        coefficient = float(-1);
       else:
         coefficient = float(coefficient_string)
 
@@ -58,7 +59,68 @@ class Polynomial:
     self._terms = parse_polynomial_expression(expression=expression)
 
   def __str__(self) -> str:
-    return str(self._terms)
+    result = '';
+
+    for term in self._terms:
+      # Parse signal
+      if term.coefficient >= 0 and len(result) > 0:
+        result += '+'
+      # Parse coefficient
+      if term.coefficient != 1 or len(term.indeterminates) == 0:
+          if term.coefficient.is_integer():
+              if term.coefficient != -1:
+                result += str(int(term.coefficient))
+              else:
+                result += '-'
+          else:
+            result += str(term.coefficient)
+      # Parse indeterminates
+      for variable, exp in term.indeterminates.items():
+        result += variable
+        if exp != 1:
+          result += '^' + str(exp)
+
+    return result
+
+  def sum(self, polynomial: Polynomial) -> Polynomial:
+    pass
+
+  def subtract(self, polynomial: Polynomial) -> Polynomial:
+    pass
+
+  def multiply(self, other: Polynomial) -> Polynomial:
+    result = Polynomial('')
+
+    for term in self._terms:
+      for other_term in other._terms:
+        coefficient = 0
+        degree = 0
+        indeterminates: dict[str, int] = {}
+
+        # Multiply coefficient
+        coefficient = term.coefficient * other_term.coefficient
+
+        # Gather all indeterminates variables
+        all_variables: set[str] = set()
+
+        for variable in term.indeterminates.keys():
+          all_variables.add(variable)
+
+        for variable in other_term.indeterminates.keys():
+          all_variables.add(variable)
+
+        # Calculate indeterminates
+        for variable in all_variables:
+          if variable in term.indeterminates and variable in other_term.indeterminates:
+            indeterminates[variable] = term.indeterminates[variable] + other_term.indeterminates[variable]
+          elif variable in term.indeterminates:
+            indeterminates[variable] = term.indeterminates[variable]
+          elif variable in other_term.indeterminates:
+            indeterminates[variable] = other_term.indeterminates[variable]
+
+        result._terms.append(Monomial(coefficient=coefficient, degree=degree, indeterminates=indeterminates))
+
+    return result
 
   def resolve(self, variables: dict[str, int]) -> float:
     result = 0
@@ -79,6 +141,12 @@ class Polynomial:
     return max(self._terms, key=lambda monomial: monomial.degree)
 
 
+print(Polynomial('4.5x^2y^3-2x^3+y^6').multiply(Polynomial('4.5x^2y^3-2x^3+y^6')))
+print(Polynomial('y^6').multiply(Polynomial('y^6')))
+print(Polynomial('x^2+x+1').multiply(Polynomial('y+1')))
+
+# print(Polynomial('4.5x^2y^3-2x^3+y^6'))
+
 if __name__ == '__main__':
   test_items = [
     { 'expression': '1', 'variables': {} },
@@ -98,9 +166,9 @@ if __name__ == '__main__':
 
   for test_item in test_items:
     polynomial = Polynomial(test_item['expression'])
-    print(f"{test_item['expression']} -> {polynomial}")
-    print(f"{test_item['expression']} using {test_item['variables']} == {polynomial.resolve(test_item['variables'])}")
-    print('----------')
+    # print(f"{test_item['expression']} -> {polynomial}")
+    # print(f"{test_item['expression']} using {test_item['variables']} == {polynomial.resolve(test_item['variables'])}")
+    # print('----------')
 
   # print('1 ->', Polynomial('1'))
   # print('x+y ->', Polynomial('x+y'))
