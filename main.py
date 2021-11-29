@@ -7,3 +7,5 @@ if __name__ == '__main__':
   print(Polynomial('x+y').multiply(Polynomial('y+x')))
   print(Polynomial('3x+y').subtract(Polynomial('2x+y')))
   print(Polynomial('x^2').sum(Polynomial('y+2x-2x^2')))
+  print(Polynomial('x^2+y').subtract(Polynomial('z^3-10+2y')))
+  print(Polynomial('x^2+y').subtract(Polynomial('z^3-10+2y')).resolve({ 'x': 2, 'y': 2, 'z': 3 }))
