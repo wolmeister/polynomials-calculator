@@ -70,7 +70,8 @@ def simplify_polynomial(polynomial: Polynomial) -> Polynomial:
     for grouped_term in grouped_terms:
       coefficient += grouped_term.coefficient
 
-    result._terms.append(Monomial(coefficient=coefficient,degree=grouped_terms[0].degree,indeterminates=grouped_terms[0].indeterminates))
+    if coefficient != 0:
+      result._terms.append(Monomial(coefficient=coefficient,degree=grouped_terms[0].degree,indeterminates=grouped_terms[0].indeterminates))
       
 
   return result
@@ -83,6 +84,9 @@ class Polynomial:
     self._terms = parse_polynomial_expression(expression=expression)
 
   def __str__(self) -> str:
+    if len(self._terms) == 0:
+      return '0'
+
     result = '';
 
     for term in self._terms:
@@ -107,10 +111,39 @@ class Polynomial:
     return result
 
   def sum(self, polynomial: Polynomial) -> Polynomial:
-    pass
+    grouped_terms_map: dict[tuple[str, int], list[Monomial]] = {}
+
+    # Group terms
+    for term in self._terms + polynomial._terms:
+        key = tuple(sorted(term.indeterminates.items()))
+
+        if key not in grouped_terms_map:
+          grouped_terms_map[key] = []
+
+        grouped_terms_map[key].append(term)
+
+    result = Polynomial('')
+
+    # Sum all grouped terms
+    for grouped_terms in grouped_terms_map.values():
+      coefficient = float(0)
+
+      for grouped_term in grouped_terms:
+        coefficient += grouped_term.coefficient
+
+      result._terms.append(Monomial(coefficient=coefficient,degree=grouped_terms[0].degree,indeterminates=grouped_terms[0].indeterminates))
+
+    return simplify_polynomial(result)
 
   def subtract(self, polynomial: Polynomial) -> Polynomial:
-    pass
+    # Invert the signal of all the terms from the subtrahend
+    subtrahend = Polynomial('')
+    subtrahend._terms = polynomial._terms.copy()
+
+    for term in subtrahend._terms:
+      term.coefficient *= -1
+
+    return self.sum(subtrahend)
 
   def multiply(self, other: Polynomial) -> Polynomial:
     result = Polynomial('')
@@ -165,10 +198,12 @@ class Polynomial:
     return max(self._terms, key=lambda monomial: monomial.degree)
 
 
-print(Polynomial('4.5x^2y^3-2x^3+y^6').multiply(Polynomial('4.5x^2y^3-2x^3+y^6')))
-print(Polynomial('y^6').multiply(Polynomial('y^6')))
-print(Polynomial('x^2+x+1').multiply(Polynomial('y+1')))
-print(Polynomial('x+y').multiply(Polynomial('y+x')))
+# print(Polynomial('4.5x^2y^3-2x^3+y^6').multiply(Polynomial('4.5x^2y^3-2x^3+y^6')))
+# print(Polynomial('y^6').multiply(Polynomial('y^6')))
+# print(Polynomial('x^2+x+1').multiply(Polynomial('y+1')))
+# print(Polynomial('x+y').multiply(Polynomial('y+x')))
+print(Polynomial('3x+y').subtract(Polynomial('2x+y')))
+print(Polynomial('x^2').sum(Polynomial('y+2x-2x^2')))
 
 # print(Polynomial('4.5x^2y^3-2x^3+y^6')) 
 
