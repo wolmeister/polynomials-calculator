@@ -51,6 +51,30 @@ def parse_polynomial_expression(expression: str) -> list[Monomial]:
 
   return monomials
 
+def simplify_polynomial(polynomial: Polynomial) -> Polynomial:
+  grouped_terms_map: dict[tuple[str, int], list[Monomial]] = {}
+
+  for term in polynomial._terms:
+    key = tuple(sorted(term.indeterminates.items()))
+
+    if key not in grouped_terms_map:
+      grouped_terms_map[key] = []
+
+    grouped_terms_map[key].append(term)
+
+  result = Polynomial('')
+  
+  for grouped_terms in grouped_terms_map.values():
+    coefficient = float(0)
+
+    for grouped_term in grouped_terms:
+      coefficient += grouped_term.coefficient
+
+    result._terms.append(Monomial(coefficient=coefficient,degree=grouped_terms[0].degree,indeterminates=grouped_terms[0].indeterminates))
+      
+
+  return result
+
 
 class Polynomial:
   _terms: list[Monomial]
@@ -120,7 +144,7 @@ class Polynomial:
 
         result._terms.append(Monomial(coefficient=coefficient, degree=degree, indeterminates=indeterminates))
 
-    return result
+    return simplify_polynomial(result)
 
   def resolve(self, variables: dict[str, int]) -> float:
     result = 0
@@ -144,8 +168,9 @@ class Polynomial:
 print(Polynomial('4.5x^2y^3-2x^3+y^6').multiply(Polynomial('4.5x^2y^3-2x^3+y^6')))
 print(Polynomial('y^6').multiply(Polynomial('y^6')))
 print(Polynomial('x^2+x+1').multiply(Polynomial('y+1')))
+print(Polynomial('x+y').multiply(Polynomial('y+x')))
 
-# print(Polynomial('4.5x^2y^3-2x^3+y^6'))
+# print(Polynomial('4.5x^2y^3-2x^3+y^6')) 
 
 if __name__ == '__main__':
   test_items = [
